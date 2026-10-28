@@ -6,8 +6,8 @@ authors:
     given-names: Tejasvi Singh
     orcid: "https://orcid.org/0000-0003-4668-3639"
 license: Apache-2.0
-repository-code: "https://github.com/tejasvi/areal-mahler-measure-v9"
-doi: 10.5281/zenodo.23582768
+repository-code: "https://github.com/tejasvi/areal-mahler-measure"
+doi: 10.5281/zenodo.23715998
 preferred-citation:
   type: article
   title: "Bounds for the smallest limit point of the areal Mahler measure of totally positive algebraic integers"
@@ -15,5 +15,5 @@ preferred-citation:
     - family-names: Tomar
       given-names: Tejasvi Singh
       orcid: "https://orcid.org/0000-0003-4668-3639"
-  doi: 10.5281/zenodo.23582767
+  doi: 10.5281/zenodo.23715993
   year: 2026

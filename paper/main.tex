@@ -1,0 +1,381 @@
+\documentclass[11pt]{amsart}
+\pdfsuppressptexinfo=-1
+\usepackage[margin=1.1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,enumitem,array}
+\usepackage[hidelinks]{hyperref}
+\hypersetup{pdftitle={Bounds for the smallest limit point of the areal Mahler measure of totally positive algebraic integers},
+  pdfauthor={Tejasvi Singh Tomar}}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\numberwithin{equation}{section}
+\setlength{\emergencystretch}{2em}
+\raggedbottom
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\logp}{\log^{+}}
+\newcommand{\Res}{\operatorname{Res}}
+% ---------------------------------------------------------------------------------------------
+% Values of the certificates; lower bounds truncated, upper bounds rounded up.
+\newcommand{\LB}{1.3830134}
+\newcommand{\UB}{1.3839579}
+\newcommand{\MzeroFrac}{\tfrac{45636208945290293391}{140737488355328000000}}
+\newcommand{\MzeroDec}{0.3242647675}
+\newcommand{\vDec}{0.324947434385}
+% Lower certificate.
+\newcommand{\NPolyLo}{34}
+\newcommand{\NNodesLo}{4{,}660}
+\newcommand{\SvalLo}{0.0955758}
+\newcommand{\BudgetLo}{0.903938}
+\newcommand{\KappaLo}{0.0960615}
+\newcommand{\GmaxRatio}{2.47}
+\newcommand{\Kconst}{5}
+\newcommand{\XLO}{1/1000}
+\newcommand{\XHI}{4357}
+\newcommand{\LTail}{1.532}
+\newcommand{\RTail}{0.192}
+\newcommand{\MinEndLo}{2.96\cdot10^{-6}}
+\newcommand{\MarginLo}{3\cdot10^{-6}}
+% Upper certificate.
+\newcommand{\eNUp}{20}
+\newcommand{\Xval}{20}
+\newcommand{\NPolyUp}{33}
+\newcommand{\NNodesUp}{12{,}670}
+\newcommand{\eZeroUp}{237/1600}
+\newcommand{\MassDevUp}{2\cdot10^{-6}}
+\newcommand{\BudgetUp}{0.946828}
+\newcommand{\MinIntLog}{1.7\cdot10^{-6}}
+\newcommand{\MinEndUp}{1.68\cdot10^{-6}}
+
+% Search (floating point; Section 6).
+\newcommand{\PrimalVal}{1.3831041}
+\newcommand{\PrimalNoEnergy}{1.38008}
+\newcommand{\DualVal}{1.3830176}
+% Earlier and comparison values.
+\newcommand{\FlamVal}{1.380047}
+\newcommand{\FlamNext}{1.3816081}
+\newcommand{\SmySeq}{1.40963085}
+\newcommand{\FlamPrinted}{1.3800359}
+\newcommand{\FlamReopt}{1.3800500}
+% Lean formalization.
+\newcommand{\lean}[1]{\texttt{\detokenize{#1}}}
+\newcommand{\LEANVERSION}{v4.35.0-rc3}
+\newcommand{\MATHLIBCOMMIT}{c55e6e786f49}
+% Repository and archive.
+\newcommand{\SuppDOI}{10.5281/zenodo.23715998}
+\newcommand{\RepoLink}{\url{https://github.com/tejasvi/areal-mahler-measure/tree/v10}}
+\newcommand{\CertShaLo}{5295faaacff1340587ef77ae593b69432cecaf793ed7c5f599ae38bc48cac5e8}
+\newcommand{\CertShaUp}{d445679c82d13611e7712b84c581a753a4bdcdc682d1687bf5730fbf8a35d454}
+
+% ---------------------------------------------------------------------------------------------
+
+\begin{document}
+
+\title[The areal Mahler measure of totally positive algebraic integers]{Bounds for the smallest limit point of the areal Mahler measure of totally positive algebraic integers}
+\author{Tejasvi Singh Tomar}
+\renewcommand{\urladdrname}{{\itshape ORCID}}
+\urladdr{\href{https://orcid.org/0000-0003-4668-3639}{https://orcid.org/0000-0003-4668-3639}}
+\subjclass[2020]{11R06, 11R80; 31A15, 65G20, 68V20}
+\keywords{areal Mahler measure, totally positive algebraic integers, limit points, auxiliary functions, logarithmic energy, computer-assisted proof, formal verification}
+
+\begin{abstract}
+Pritsker's areal analog $\|P\|_0$ of the Mahler measure replaces the integral of $\log|P|$ over the unit circle by its integral over the unit disc with respect to normalized area. For an algebraic number $\alpha$ of degree $n$ with minimal polynomial $P\in\Z[x]$, taken primitive with positive leading coefficient, let $N_0(\alpha)=\|P\|_0^{1/n}$. Flammang proved that $N_0(\alpha)\ge\FlamVal$ for every totally positive algebraic integer $\alpha$ outside an explicit finite set. We prove that the smallest limit point of the values of $N_0$ on totally positive algebraic integers and their essential minimum lie between $\LB$ and $\UB$. The lower bound improves on Flammang's constant: it holds for all but finitely many totally positive algebraic numbers, not only integers, although the exceptions are not determined. Infinitely many totally positive algebraic integers satisfy $N_0(\alpha)<\UB$. The lower bound comes from an auxiliary function with a logarithmic energy term, and the upper bound from an explicit measure that, by a criterion and a theorem of Smith, is a limit of distributions of conjugates of totally positive algebraic integers. The inequalities behind both bounds are verified in ball arithmetic, and both bounds are also proved in Lean, the upper one assuming Smith's theorem.
+\end{abstract}
+
+\maketitle
+
+\section{Introduction}\label{sec:intro}
+
+For a nonzero polynomial $P(z)=a\prod_{i=1}^n(z-\alpha_i)$ with complex coefficients, Pritsker \cite{Pri08} defined
+\[
+\|P\|_0=\exp\Bigl(\frac1\pi\int_{D}\log|P(z)|\,dA(z)\Bigr),
+\]
+where $D$ is the unit disc and $dA$ is the area measure, and he proved
+\begin{equation}\label{eq:pritsker}
+\|P\|_0=M(P)\exp\Bigl(\frac12\sum_{|\alpha_i|<1}\bigl(|\alpha_i|^2-1\bigr)\Bigr),\qquad M(P)=|a|\prod_{i=1}^n\max\bigl(1,|\alpha_i|\bigr),
+\end{equation}
+so that $e^{-n/2}M(P)\le\|P\|_0\le M(P)$ \cite[Theorem~1.1 and Corollary~1.2]{Pri08}. Flammang \cite{Fla15} calls $\|P\|_0$ the Pritsker measure of an algebraic integer $\alpha$ with minimal polynomial $P$, and $N_0(\alpha)=\|P\|_0^{1/\deg\alpha}$ its absolute Pritsker measure. We use the same definitions for every algebraic number $\alpha$ of degree $n$, with $P$ its minimal polynomial in $\Z[x]$, primitive and with leading coefficient $a\ge1$. We call $\alpha$ totally positive if all its conjugates $\alpha_i$ are real and positive. For such $\alpha$, \eqref{eq:pritsker} gives
+\begin{equation}\label{eq:height}
+n\log N_0(\alpha)=\log a+\sum_{i=1}^ng(\alpha_i),\qquad g(x)=\logp x+\tfrac12\bigl(\min(1,x)^2-1\bigr)\quad(x>0),
+\end{equation}
+where $\logp x=\log\max(1,x)$. The function $g$ is continuously differentiable on $(0,\infty)$, increasing, equal to $\log x$ for $x\ge1$, and tends to $-\frac12$ as $x\to0$; moreover $\logp x-\frac12\le g(x)\le\logp x$ and $g(x)\ge\log x$ for all $x>0$.
+
+As for the Mahler measure of totally real algebraic integers \cite{Smy80,Smy81} and for the trace of totally positive ones in the Schur--Siegel--Smyth trace problem \cite{OSS25}, the question is how small $N_0$ can be on totally positive algebraic integers apart from finitely many exceptions. Let $\mathcal L_{A}^+$ be the set of the values $N_0(\alpha)$, where $\alpha$ runs through the totally positive algebraic integers, let $\lambda_A^+$ be the smallest limit point of $\mathcal L_A^+$, and let
+\[
+E_A^+=\sup\bigl\{c:\ \text{only finitely many totally positive algebraic integers $\alpha$ satisfy $N_0(\alpha)\le c$}\bigr\}
+\]
+be the essential minimum. The set $\mathcal L_A^+$ lies in $[1,\infty)$ \cite[(1.3)]{Pri08}, and Lemma~\ref{lem:crit} below shows, using a theorem of Smith, that it has limit points, so $\lambda_A^+$ exists. Every neighbourhood of $\lambda_A^+$ contains infinitely many points of $\mathcal L_A^+$, so $E_A^+\le\lambda_A^+$. Flammang \cite[Theorem~2]{Fla15} proved $N_0(\alpha)\ge\FlamVal$ for every totally positive algebraic integer $\alpha$ whose minimal polynomial is not one of $x-1$, $x^2-3x+1$, $x^3-6x^2+5x-1$, $x^4-7x^3+13x^2-7x+1$ and $x^5-11x^4+29x^3-26x^2+9x-1$, so that $E_A^+\ge\FlamVal$. The values of $N_0$ at the roots of the last four polynomials are the four smallest points of $\mathcal L_A^+$ other than $1$, and Flammang conjectures that the next one is $\FlamNext\ldots$, attained at the roots of $x^5-13x^4+32x^3-27x^2+9x-1$. Explicit sequences of totally positive algebraic integers, such as Smyth's sequence of Section~\ref{sec:remarks}, suggest upper bounds near $1.41$, but we are not aware of a published upper bound for $\lambda_A^+$.
+
+\begin{theorem}\label{thm:main}
+\begin{enumerate}[label=\textup{(\roman*)}]
+\item All but finitely many totally positive algebraic numbers $\alpha$ satisfy $N_0(\alpha)>\LB$.
+\item Infinitely many totally positive algebraic integers $\alpha$ satisfy $N_0(\alpha)<\UB$.
+\end{enumerate}
+Moreover, $\LB<E_A^+\le\lambda_A^+<\UB$.
+\end{theorem}
+
+The strict inequalities in the last statement of Theorem~\ref{thm:main} hold because the proof gives the slightly stronger bounds $E_A^+\ge1.38301343\ldots$ and $\lambda_A^+\le1.38395789\ldots$ (Section~\ref{sec:cert}). Since $\|P\|_0$ includes the leading coefficient, the lower bound concerns all totally positive algebraic numbers, not only integers; Section~\ref{sec:lower} shows how the leading coefficient makes up for the denominators that appear. The finitely many exceptions in (i) include $1$, the roots of the last four polynomials above, the roots of the quintic of Flammang's conjecture, where $N_0=\FlamNext\ldots<\LB$, and numbers that are not integers, such as $1/2$, where $N_0(1/2)=2e^{-3/8}=1.37457\ldots$. The theorem leaves open which totally positive algebraic integers have $N_0(\alpha)\le\LB$, and whether this quintic gives the next point of $\mathcal L_A^+$, as Flammang conjectures.
+
+\subsection*{The method}
+Both bounds are adaptations of our papers on the classical Mahler measure of totally positive algebraic integers, where $\logp x$ takes the place of $g(x)$: the lower bound of \cite{Tom26a} and the upper bound of \cite{Tom26b}, which place the smallest limit point of the absolute Mahler measure $M(P)^{1/n}$ on totally positive algebraic integers between $1.7234615$ and $1.7239501$. By \eqref{eq:height}, the main change in the arguments is that the conjugates are averaged against $g$ instead of $\logp$.
+
+Lower bounds come from auxiliary functions. If $g(x)\ge m+\sum_jc_j\log|Q_j(x)|$ for all $x>0$, with nonzero $Q_j\in\Z[x]$ and $c_j\ge0$, then averaging over the conjugates of a totally positive algebraic integer $\alpha$ with $Q_j(\alpha)\ne0$ gives $\log N_0(\alpha)\ge m$, because each $\prod_iQ_j(\alpha_i)$ is a nonzero integer. This is the method that Smyth \cite{Smy81} introduced for the Mahler measure and that Flammang \cite[Section~3]{Fla15} used for $N_0$. As in \cite{Tom26a}, we add a term $\lambda(2U_\nu-I(\nu))$ with $\lambda\ge0$, where $U_\nu(x)=\int\log|x-y|\,d\nu(y)$ and $I(\nu)=\int U_\nu\,d\nu$ are the logarithmic potential and energy of a reference probability measure $\nu$; because discriminants are nonzero integers, its average over the conjugates is bounded below by a quantity that tends to $0$ as the degree grows. This energy term was introduced by Orloski, Talebizadeh Sardari and Smith \cite{OSS25} for the Schur--Siegel--Smyth trace problem. Numerically, this term is what lifts the bound above what the polynomials of Flammang's table can give alone (Section~\ref{sec:remarks}).
+
+Upper bounds come from measures. If a probability measure $\nu$ on an interval $[0,X]$ with $X>4$, so that the interval has capacity greater than $1$, satisfies $\int\log|Q|\,d\nu\ge0$ for every nonzero $Q\in\Z[x]$, then by a theorem of Smith \cite[Theorem~1.5]{Smi24} it is a weak limit of the distributions of conjugates of distinct totally positive algebraic integers $\alpha_k$ whose conjugates lie in $[0,X]$, and then $N_0(\alpha_k)\to\exp\int g\,d\nu$; Lemma~\ref{lem:crit} turns this into an upper bound for $\lambda_A^+$. A criterion of Smith \cite[Proposition~5.15]{Smi24} reduces the infinitely many conditions to finitely many conditions on finitely many polynomials, which we check on a measure with a piecewise linear density.
+
+Each bound rests on a certificate: the auxiliary function or the measure, given as finite data that a computer checks. The polynomials of the two certificates are $x$ and some of the polynomials of Flammang's table for $N_0$ \cite[Table~2]{Fla15}, and their measures have piecewise linear densities on rational nodes, so that potentials and energies have closed forms. Section~\ref{sec:lower} proves the lower bound from an auxiliary function, Section~\ref{sec:upper} proves the form of Smith's criterion that we use, Section~\ref{sec:cert} describes the certificates and their verification in ball arithmetic and proves Theorem~\ref{thm:main}, Section~\ref{sec:lean} describes the formal proofs in Lean, which cover Pritsker's formula \eqref{eq:pritsker}, the lemmas of Sections~\ref{sec:lower} and~\ref{sec:upper} and the checks of the certificates, and Section~\ref{sec:remarks} collects numerical observations.
+
+\section{The lower bound}\label{sec:lower}
+
+For finite positive Borel measures $\theta,\eta$ on $\C$ with compact support we write $U_\eta(z)=\int\log|z-y|\,d\eta(y)$, $I(\theta,\eta)=\int U_\eta\,d\theta$ and $I(\theta)=I(\theta,\theta)$.
+
+\begin{lemma}\label{lem:aux}
+Let $Q_1,\dots,Q_J\in\Z[x]$ be nonzero, $c_1,\dots,c_J>0$, $\lambda\ge0$ and $m\in\R$. Let $\nu$ be a probability measure on $\C$ with compact support, and let $K>0$ be such that $\nu(\{z:|z-y|<r\})\le Kr$ for all $y\in\C$ and $0<r\le1$. Let $Z$ be the set of positive real roots of the polynomials $Q_j$. Assume that
+\begin{equation}\label{eq:F}
+F(x)=g(x)-m-\sum_{j=1}^Jc_j\log|Q_j(x)|-\lambda\bigl(2U_\nu(x)-I(\nu)\bigr)\ \ge\ 0\qquad\text{for all }x\in(0,\infty)\setminus Z.
+\end{equation}
+Then $\sum_jc_j\deg Q_j+2\lambda\le1$, and every totally positive algebraic number $\alpha$ of degree $n\ge1/(2K)$ that is not a root of one of the polynomials $Q_j$ satisfies
+\begin{equation}\label{eq:eff}
+\log N_0(\alpha)\ \ge\ m-\frac{\lambda\,\bigl(1+\log(2Kn)\bigr)}{n}.
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+We follow the proof of \cite[Lemma~2.2]{Tom26a}, which uses the left side of \eqref{eq:F} only twice. First, since $g(x)=\log x$ for $x\ge1$, we still have $F(x)=\bigl(1-\sum_jc_j\deg Q_j-2\lambda\bigr)\log x+O(1)$ as $x\to+\infty$, which forces the degree condition. Second, the identity $n\log\Omega(\alpha)=\log a+\sum_i\logp\alpha_i$ of \cite[(2.5)]{Tom26a} is replaced by \eqref{eq:height}. The rest of the argument is unchanged, and we recall it. Let $P=a\prod_{i=1}^n(x-\alpha_i)$ be the minimal polynomial of $\alpha$. The resultants $\Res(P,Q_j)$ and the discriminant of $P$ are nonzero integers, so $\sum_i\log|Q_j(\alpha_i)|\ge-\deg(Q_j)\log a$ for each $j$ and $\sum_{i\ne k}\log|\alpha_i-\alpha_k|\ge-(2n-2)\log a$. Replacing each conjugate by the normalized arc length measure on the circle of radius $r\in(0,1]$ around it, and comparing the resulting measure with $\nu$ by the inequality $I(\theta)\le2I(\theta,\eta)-I(\eta)$ for probability measures \cite[Lemma~2.1]{Tom26a}, gives
+\[
+\frac1n\sum_{i=1}^n\bigl(2U_\nu(\alpha_i)-I(\nu)\bigr)\ \ge\ \frac{\log r}n-\frac{(2n-2)\log a}{n^2}-2Kr
+\]
+\cite[(2.9)]{Tom26a}. Averaging \eqref{eq:F} over the conjugates and using these bounds, we get
+\[
+\frac1n\sum_{i=1}^ng(\alpha_i)\ \ge\ m-\frac{\log a}n\Bigl(\sum_jc_j\deg Q_j+2\lambda\,\frac{n-1}n\Bigr)-\lambda\Bigl(2Kr+\frac{\log(1/r)}n\Bigr),
+\]
+and by \eqref{eq:height}
+\[
+\log N_0(\alpha)\ \ge\ m+\frac{\log a}n\Bigl(1-\sum_jc_j\deg Q_j-2\lambda\,\frac{n-1}n\Bigr)-\lambda\Bigl(2Kr+\frac{\log(1/r)}n\Bigr).
+\]
+The middle term is nonnegative because $\log a\ge0$ and $\sum_jc_j\deg Q_j+2\lambda\le1$, and the choice $r=1/(2Kn)$ gives \eqref{eq:eff}.
+\end{proof}
+
+\begin{corollary}\label{cor:fin}
+Under the assumptions of Lemma~\ref{lem:aux}, for every $\varepsilon>0$ only finitely many totally positive algebraic numbers $\alpha$ satisfy $\log N_0(\alpha)\le m-\varepsilon$.
+\end{corollary}
+
+\begin{proof}
+Choose $n_0\ge1/(2K)$ such that $\lambda(1+\log(2Kn))/n<\varepsilon$ for all $n\ge n_0$. If $\alpha$ is totally positive and $\log N_0(\alpha)\le m-\varepsilon$, then either $\alpha$ is one of the finitely many roots of the polynomials $Q_j$, or $\alpha$ has degree less than $n_0$ by \eqref{eq:eff}. In the second case the absolute logarithmic Weil height $h(\alpha)=\frac1n\log M(P)$ \cite[Section~1.6]{BG06} satisfies $h(\alpha)\le\log N_0(\alpha)+\frac12\le m+\frac12$, because $M(P)\le e^{n/2}\|P\|_0$, and by Northcott's theorem \cite[Theorem~1.6.8]{BG06} there are only finitely many such $\alpha$.
+\end{proof}
+
+\begin{remark}\label{rem:flammang}
+For $\lambda=0$, Lemma~\ref{lem:aux} is the classical argument, extended to algebraic numbers that need not be integers, and its conclusion is $\log N_0(\alpha)\ge m$ for every totally positive algebraic number $\alpha$ that is not a root of one of the $Q_j$: the measure $\nu$ then plays no role, and with $\nu$ uniform on $[0,1]$ and $K=2$ every $n\ge1$ is admissible. Flammang's auxiliary functions for $N_0$ \cite[Section~3]{Fla15} are of this kind.
+\end{remark}
+
+\section{The criterion for the upper bound}\label{sec:upper}
+
+Let $X>4$ be rational. Let $0\le e_0<e_1<\dots<e_N\le X$ be rational nodes and let $G\colon\R\to[0,\infty)$ be the continuous function that is linear on each interval $[e_{k-1},e_k]$, takes rational values $G(e_k)$ with $G(e_0)=G(e_N)=0$, and vanishes outside $[e_0,e_N]$. Let $\mu=G(x)\,dx$, let $s=\mu(\R)>0$ and $U(z)=\int\log|z-y|\,G(y)\,dy$. Let $Q_1,\dots,Q_J\in\Z[x]$ be distinct primitive polynomials that are irreducible over $\Q$, let $b_1,\dots,b_J\ge0$, and put $h(z)=U(z)-\sum_{j:\,b_j>0}b_j\log|Q_j(z)|$, with $h=+\infty$ at the roots of these $Q_j$.
+
+\begin{lemma}\label{lem:crit}
+Assume that
+\begin{enumerate}[label=\textup{(C\arabic*)}]
+\item\label{c1} $\sum_jb_j\deg Q_j<s$;
+\item\label{c2} $\int\log|Q_j|\,d\mu\ge0$ for every $j$ with $b_j>0$;
+\item\label{c3} $h(x)\ge0$ for every $x\in[e_0,e_N]$.
+\end{enumerate}
+Let $v=\frac1s\int g\,d\mu$. Then there are distinct totally positive algebraic integers $\alpha_1,\alpha_2,\dots$ with $N_0(\alpha_k)\to e^v$, and $E_A^+\le\lambda_A^+\le e^v$.
+\end{lemma}
+
+\begin{proof}
+We follow the proof of \cite[Lemma~2.1]{Tom26b}. First, $h\ge0$ on $\C$: on $\C\setminus[e_0,e_N]$ the function $h$ is superharmonic, since $U$ is harmonic there and each $-\log|Q_j|$ is superharmonic, and $h(z)\to+\infty$ as $|z|\to\infty$ by \ref{c1}, so \ref{c3} and the minimum principle give $h\ge0$. Second, $\int\log|P|\,d\mu\ge0$ for every nonzero $P\in\Z[x]$. Since $\int\log|c|\,d\mu=s\log|c|\ge0$ for every nonzero integer $c$, it suffices to take $P$ primitive and irreducible, with leading coefficient $a\ge1$. If $P$ is one of the $Q_j$ with $b_j>0$, this is \ref{c2}. Otherwise no root of $P$ is a root of these $Q_j$, the resultants $\Res(P,Q_j)=a^{\deg Q_j}\prod_{P(\rho)=0}Q_j(\rho)$ are nonzero integers, and $h\ge0$ at the roots $\rho$ of $P$, counted with multiplicity, gives
+\begin{align*}
+\int\log|P|\,d\mu&=s\log a+\sum_{P(\rho)=0}U(\rho)\ \ge\ s\log a+\sum_{j:\,b_j>0}b_j\log\prod_{P(\rho)=0}|Q_j(\rho)|\\
+&\ge\Bigl(s-\sum_jb_j\deg Q_j\Bigr)\log a\ \ge\ 0
+\end{align*}
+by \ref{c1}. By \cite[Theorem~1.5]{Smi24}, applied to $\mu/s$ on $\Sigma=[0,X]$, which has capacity $X/4>1$ \cite[Example~I.3.5]{ST97}, there are distinct monic irreducible polynomials $R_k\in\Z[x]$ with all roots in $\Sigma$ whose root distributions converge weakly to $\mu/s$. At most one of them is $x$; for the others, a root $\alpha_k$ of $R_k$ is a totally positive algebraic integer, and by \eqref{eq:height}
+\[
+\log N_0(\alpha_k)=\frac1{\deg R_k}\sum_{R_k(\rho)=0}g(\rho)\ \longrightarrow\ \frac1s\int g\,d\mu=v,
+\]
+since $g$ extends to a continuous function on $\Sigma$ with $g(0)=-\frac12$. For the bound on $\lambda_A^+$, choose $X'\ge X$ with $\log(X'/4)>v$. The values $N_0(\alpha_k)$ might coincide for infinitely many $k$, so this alone does not give a limit point; to obtain one, we mix $\mu/s$ with the equilibrium measure $\omega$ of $[0,X']$. Since $U_\omega\ge\log(X'/4)$ on $\C$ \cite[(I.1.4) and Example~I.3.5]{ST97}, we have $\int\log|P|\,d\omega\ge0$ for every nonzero $P\in\Z[x]$, as in Step~4 of \cite[Lemma~2.1]{Tom26b}, and $w=\int g\,d\omega\ge\int\log x\,d\omega=U_\omega(0)\ge\log(X'/4)>v$, because $g(x)\ge\log x$. For $t\in[0,1]$ the measure $(1-t)\mu/s+t\omega$ satisfies the same integrality condition, and Smith's theorem on $[0,X']$ gives distinct totally positive algebraic integers $\alpha_k$ with $\log N_0(\alpha_k)\to(1-t)v+tw$. So the closure of $\mathcal L_A^+$ contains the interval $[e^v,e^w]$, which is nondegenerate because $w>v$. Every point of this interval is a limit point of $\mathcal L_A^+$, and $\lambda_A^+\le e^v$.
+\end{proof}
+
+\section{The certificates and their verification}\label{sec:cert}
+
+Flammang's table for $N_0$ \cite[Table~2]{Fla15} lists $58$ polynomials with integer coefficients, together with the weights of her auxiliary function; the first four are $x$, $x-1$, $2x-1$ and $x^2-3x+1$. We refer to them by their numbers in her table. Both certificates list the coefficients of their polynomials, so the proof does not depend on a transcription of the table. Table~\ref{tab:polys} shows the polynomials of both certificates with their weights. Some of the polynomials have non-real roots. The certificates and the programs that check them, with their output, are in the repository given under Data availability.
+
+\begin{table}[p]
+\caption{The polynomials of the certificates: their rows in Flammang's table for $N_0$ \cite[Table~2]{Fla15}, their degrees, their coefficients from the leading one down, and their weights $c_j$ in the lower and $b_j$ in the upper certificate, rounded. A dash marks a polynomial that the certificate does not use. The certificates give the weights exactly.}\label{tab:polys}
+\scriptsize
+\begin{tabular}{@{}rr>{\raggedright\arraybackslash}p{0.63\textwidth}ll@{}}
+\toprule
+row & deg & coefficients & $c_j$ & $b_j$\\
+\midrule
+1 & 1 & $1$, $0$ & $0.3412$ & $0.0825$\\
+2 & 1 & $1$, $-1$ & $0.2063$ & $0.0731$\\
+3 & 1 & $2$, $-1$ & $0.0268$ & $0.0378$\\
+4 & 2 & $1$, $-3$, $1$ & $0.0281$ & $0.0313$\\
+5 & 2 & $1$, $-4$, $2$ & $1.7\cdot10^{-5}$ & $4.0\cdot10^{-9}$\\
+6 & 3 & $1$, $-6$, $5$, $-1$ & $0.0161$ & $0.0186$\\
+7 & 3 & $3$, $-9$, $6$, $-1$ & $2.8\cdot10^{-4}$ & $0.0075$\\
+8 & 3 & $1$, $-8$, $6$, $-1$ & $4.8\cdot10^{-6}$ & $8.3\cdot10^{-9}$\\
+10 & 4 & $1$, $-7$, $13$, $-7$, $1$ & $0.0028$ & $0.0081$\\
+11 & 4 & $1$, $-8$, $14$, $-7$, $1$ & -- & $4.4\cdot10^{-6}$\\
+12 & 5 & $1$, $-11$, $29$, $-26$, $9$, $-1$ & $0.0017$ & $0.0056$\\
+13 & 5 & $1$, $-13$, $32$, $-27$, $9$, $-1$ & $2.5\cdot10^{-4}$ & $2.3\cdot10^{-4}$\\
+14 & 5 & $1$, $-12$, $31$, $-27$, $9$, $-1$ & $1.0\cdot10^{-4}$ & $0.0057$\\
+15 & 5 & $1$, $-11$, $27$, $-23$, $8$, $-1$ & $5.5\cdot10^{-6}$ & --\\
+16 & 6 & $5$, $-38$, $96$, $-103$, $52$, $-12$, $1$ & $2.4\cdot10^{-5}$ & $3.3\cdot10^{-10}$\\
+17 & 7 & $1$, $-16$, $75$, $-148$, $137$, $-62$, $13$, $-1$ & $1.2\cdot10^{-6}$ & $3.2\cdot10^{-10}$\\
+18 & 7 & $1$, $-18$, $89$, $-172$, $150$, $-64$, $13$, $-1$ & $3.1\cdot10^{-7}$ & --\\
+19 & 7 & $1$, $-14$, $66$, $-136$, $131$, $-61$, $13$, $-1$ & -- & $1.6\cdot10^{-9}$\\
+21 & 7 & $1$, $-16$, $80$, $-160$, $144$, $-63$, $13$, $-1$ & -- & $0.0038$\\
+22 & 7 & $1$, $-16$, $78$, $-157$, $143$, $-63$, $13$, $-1$ & -- & $1.0\cdot10^{-5}$\\
+23 & 8 & $1$, $-19$, $111$, $-277$, $339$, $-221$, $78$, $-14$, $1$ & $6.5\cdot10^{-4}$ & $0.0109$\\
+24 & 8 & $2$, $-30$, $154$, $-356$, $415$, $-260$, $88$, $-15$, $1$ & $8.4\cdot10^{-6}$ & $0.0027$\\
+25 & 8 & $3$, $-40$, $187$, $-402$, $445$, $-269$, $89$, $-15$, $1$ & $4.7\cdot10^{-4}$ & $0.0071$\\
+26 & 8 & $1$, $-19$, $121$, $-312$, $386$, $-251$, $87$, $-15$, $1$ & $8.4\cdot10^{-6}$ & $0.0052$\\
+27 & 8 & $1$, $-21$, $124$, $-309$, $378$, $-246$, $86$, $-15$, $1$ & $3.5\cdot10^{-7}$ & $1.0\cdot10^{-9}$\\
+28 & 8 & $1$, $-21$, $130$, $-334$, $407$, $-259$, $88$, $-15$, $1$ & $3.4\cdot10^{-6}$ & $2.8\cdot10^{-10}$\\
+29 & 8 & $1$, $-21$, $128$, $-321$, $391$, $-252$, $87$, $-15$, $1$ & $3.2\cdot10^{-6}$ & --\\
+31 & 8 & $2$, $-32$, $169$, $-385$, $438$, $-268$, $89$, $-15$, $1$ & $8.7\cdot10^{-6}$ & --\\
+33 & 9 & $1$, $-20$, $130$, $-400$, $664$, $-623$, $336$, $-102$, $16$, $-1$ & $1.2\cdot10^{-6}$ & --\\
+34 & 10 & $1$, $-24$, $194$, $-743$, $1526$, $-1798$, $1265$, $-537$, $134$, $-18$, $1$ & -- & $0.0034$\\
+35 & 10 & $3$, $-55$, $369$, $-1217$, $2227$, $-2402$, $1575$, $-630$, $149$, $-19$, $1$ & $1.4\cdot10^{-6}$ & --\\
+36 & 10 & $1$, $-26$, $217$, $-814$, $1620$, $-1858$, $1283$, $-539$, $134$, $-18$, $1$ & -- & $4.7\cdot10^{-11}$\\
+37 & 11 & $1$, $-27$, $263$, $-1211$, $3003$, $-4350$, $3882$, $-2189$, $778$, $-168$, $20$, $-1$ & $3.2\cdot10^{-6}$ & --\\
+38 & 11 & $1$, $-25$, $236$, $-1090$, $2749$, $-4062$, $3696$, $-2121$, $765$, $-167$, $20$, $-1$ & $1.6\cdot10^{-5}$ & --\\
+40 & 12 & $1$, $-28$, $296$, $-1561$, $4640$, $-8357$, $9530$, $-7055$, $3414$, $-1065$, $205$, $-22$, $1$ & $1.8\cdot10^{-4}$ & $0.0080$\\
+41 & 12 & $1$, $-26$, $265$, $-1388$, $4177$, $-7677$, $8944$, $-6752$, $3322$, $-1050$, $204$, $-22$, $1$ & -- & $0.0027$\\
+42 & 12 & $1$, $-26$, $263$, $-1365$, $4080$, $-7476$, $8713$, $-6598$, $3263$, $-1038$, $203$, $-22$, $1$ & -- & $2.1\cdot10^{-9}$\\
+44 & 12 & $1$, $-29$, $309$, $-1629$, $4833$, $-8678$, $9852$, $-7250$, $3483$, $-1078$, $206$, $-22$, $1$ & $3.0\cdot10^{-6}$ & $6.8\cdot10^{-4}$\\
+46 & 13 & $1$, $-29$, $328$, $-1895$, $6311$, $-13029$, $17502$, $-15800$, $9749$, $-4114$, $1165$, $-211$, $22$, $-1$ & $1.1\cdot10^{-6}$ & --\\
+49 & 14 & $1$, $-31$, $385$, $-2533$, $9924$, $-24695$, $40656$, $-45466$, $35083$, $-18777$, $6923$, $-1718$, $273$, $-25$, $1$ & -- & $0.0053$\\
+50 & 15 & $1$, $-34$, $463$, $-3381$, $14941$, $-42607$, $81569$, $-107671$, $99766$, $-65514$, $30501$, $-9959$, $2221$, $-321$, $27$, $-1$ & $2.3\cdot10^{-7}$ & $0.0030$\\
+51 & 15 & $1$, $-38$, $545$, $-4031$, $17628$, $-49170$, $91713$, $-117996$, $106826$, $-68765$, $31492$, $-10150$, $2242$, $-322$, $27$, $-1$ & -- & $3.3\cdot10^{-9}$\\
+52 & 17 & $1$, $-38$, $604$, $-5339$, $29359$, $-106776$, $267165$, $-472631$, $602676$, $-561207$, $384361$, $-193778$, $71447$, $-18956$, $3510$, $-429$, $31$, $-1$ & $2.3\cdot10^{-6}$ & --\\
+53 & 19 & $1$, $-44$, $811$, $-8364$, $54453$, $-239252$, $739805$, $-1655854$, $2735704$, $-3382218$, $3157621$, $-2236949$, $1203101$, $-489025$, $148606$, $-33106$, $5230$, $-553$, $35$, $-1$ & $6.5\cdot10^{-8}$ & --\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{The lower certificate}
+The lower certificate consists of
+\begin{itemize}[leftmargin=1.5em]
+\item the $\NNodesLo$ rational nodes $0=e_0<e_1<\dots<e_N=24$; consecutive nodes are at most $1/100$ apart, and at most $7\cdot10^{-4}$ apart in $[r-0.004,r+0.004]$ for each of $189$ positive roots $r$ of polynomials of \cite[Table~2]{Fla15} (see Section~\ref{sec:remarks});
+\item rational values $G_k\ge0$ of a continuous piecewise linear function $G$, which vanishes on $[0,13/100]$ and at $e_N=24$;
+\item the rational number $m_0=\MzeroFrac=\MzeroDec\ldots$;
+\item the $\NPolyLo$ polynomials of Table~\ref{tab:polys} with a weight $c_j$, each a positive dyadic rational.
+\end{itemize}
+With $\rho=G(x)\,dx$, $s=\rho(\R)=\SvalLo\ldots$, $\nu=\rho/s$ and $\lambda=s$, the function \eqref{eq:F} becomes
+\begin{equation}\label{eq:Fcert}
+F(x)=g(x)-m_0-\sum_jc_j\log|Q_j(x)|-2U_\rho(x)+\frac{I(\rho)}s.
+\end{equation}
+A disc of radius $r$ meets $\R$ in an interval of length at most $2r$, and $\max G/s<\GmaxRatio$, so $\nu$ satisfies the hypothesis of Lemma~\ref{lem:aux} with $K=\Kconst$. The potential and the energy have the closed forms of \cite[Lemma~3.1]{Tom26a}. Let $C_i$ be the jump of the slope of $G$ at $e_i$, so that $G''=\sum_iC_i\delta_{e_i}$ and $\sum_iC_i=\sum_iC_ie_i=0$, and let $H(t)=\frac{t^2}2\log|t|-\frac34t^2$ and $L(t)=\frac{t^4}{24}\log|t|-\frac{25}{288}t^4$, with $H(0)=L(0)=0$. Then
+\[
+U_\rho(x)=\sum_iC_iH(e_i-x),\qquad I(\rho)=\sum_{i,k}C_iC_kL(e_i-e_k).
+\]
+The degree sum is $\sum_jc_j\deg Q_j+2s=\BudgetLo\ldots<1$.
+
+The verification follows \cite[Section~3.3]{Tom26a}. It uses Arb ball arithmetic \cite{Joh17} through python-flint \cite{pyflint}, with the certified root isolation of FLINT \cite{FLINT}. The program reads the data as exact rationals, checks the degree sum exactly, and computes $I(\rho)$ from the closed form. On $(0,x_{\mathrm{lo}}]$ with $x_{\mathrm{lo}}=\XLO$ it uses four bounds: $g\ge-\frac12$; the term $-c\log x$ of the polynomial $x$, where $c$ is its weight; upper bounds for the other $|Q_j|$; and $U_\rho(x)\le U_\rho(0)$, which holds because $U_\rho$ decreases to the left of the support of $G$. It obtains $F>\LTail$ there. On $[x_{\mathrm{hi}},\infty)$ with $x_{\mathrm{hi}}=\XHI$ it uses $g(x)=\log x$, the bounds $|Q_j(x)|\le\|Q_j\|_1x^{\deg Q_j}$, where $\|Q_j\|_1$ is the sum of the absolute values of the coefficients, and $U_\rho(x)\le s\log x$. This gives $F\ge\kappa\log x-b$ with $\kappa=1-\sum_jc_j\deg Q_j-2s=\KappaLo\ldots$ and an explicit constant $b$, and hence $F>\RTail$ there. On $[x_{\mathrm{lo}},x_{\mathrm{hi}}]$ it encloses the positive roots of the $Q_j$ in windows. On a window it bounds $g$ from below by its value at the left end, since $g$ is increasing. The nodes, the ends of the windows and the point $1$, where $g''$ jumps, cut the rest into intervals. On such an interval $[p,q]$ the program bounds $F$ from below by $\min(F(p),F(q))-\frac{q-p}4\int_p^q(F'')_+$ \cite[Lemma~3.3]{Tom26a}, and it bisects the interval if the bound is not positive. In the bound for $(F'')_+$ the term $g''=1$ on $(0,1)$ is included, and $g''=-1/x^2$ on $(1,\infty)$ is dropped. The smallest lower bound for $F$ at an end of an interval was $\MinEndLo$.
+
+\subsection{The upper certificate}
+The upper certificate consists of
+\begin{itemize}[leftmargin=1.5em]
+\item $X=\Xval$;
+\item the $\NNodesUp$ rational nodes $\eZeroUp=e_0<e_1<\dots<e_N=\eNUp$, with spacings $1/400$, $1/800$ and $1/1600$;
+\item rational values of $G$, whose mass $s$ differs from $1$ by less than $\MassDevUp$;
+\item the rational number $v^*=\vDec$;
+\item the $\NPolyUp$ polynomials of Table~\ref{tab:polys} with a weight $b_j$, each positive.
+\end{itemize}
+All of these polynomials are primitive and irreducible. Moreover, $\sum_jb_j\deg Q_j=\BudgetUp\ldots<s$. The program uses the same libraries. It checks the data; \ref{c1}, in exact arithmetic; \ref{c2}, from the closed form of $U$ at the roots of the $Q_j$, with the complex closed form of \cite[Section~3.2]{Tom26b} at the non-real roots; \ref{c3}, on all of $[e_0,e_N]$, as in \cite[Section~3.2]{Tom26b}; and the inequality $\frac1s\int g\,d\mu\le v^*$. The last integral has a closed form on each linear piece of $G$: on $[e_{k-1},e_k]\cap[0,1]$ the integrand is a polynomial with rational coefficients, and on $[e_{k-1},e_k]\cap[1,\infty)$ it involves $\int x^i\log x\,dx$ for $i\le1$. The smallest of the integrals in \ref{c2} is about $\MinIntLog$. For \ref{c3} the smallest lower bound for $h$ at an end of an interval was $\MinEndUp$.
+
+A second program in ball arithmetic, written from the description of the certificate formats and from Lemmas~\ref{lem:aux} and~\ref{lem:crit} without reference to these programs, confirms both certificates by a different method.
+
+\begin{proof}[Proof of Theorem~\ref{thm:main}]
+For the lower certificate the function \eqref{eq:Fcert} is nonnegative on $(0,\infty)$ outside the roots of the $Q_j$, and it is the function \eqref{eq:F} with $\nu=\rho/s$, $\lambda=s$, $K=\Kconst$ and $m=m_0$. By Corollary~\ref{cor:fin}, for every $\varepsilon>0$ only finitely many totally positive algebraic numbers $\alpha$ satisfy $\log N_0(\alpha)\le m_0-\varepsilon$. With $\varepsilon=m_0-\log\LB>0$ this gives (i), and since $\varepsilon$ is arbitrary, it gives $E_A^+\ge e^{m_0}>\LB$. For the upper certificate, \ref{c1}--\ref{c3} hold and $v\le v^*$, so Lemma~\ref{lem:crit} gives distinct totally positive algebraic integers $\alpha_k$ with $\log N_0(\alpha_k)\to v$, and $\lambda_A^+\le e^v\le e^{v^*}<\UB$; in its proof we may take $X'=X=20$, since $\log5>v^*$. All but finitely many of the $\alpha_k$ satisfy $N_0(\alpha_k)<\UB$, which gives (ii). Finally $E_A^+\le\lambda_A^+$.
+\end{proof}
+
+\section{Formal verification}\label{sec:lean}
+
+We also proved part~(i) of Theorem~\ref{thm:main}, and part~(ii) assuming Smith's theorem, in the Lean~4 proof assistant \cite{Lean4}, with the Mathlib library \cite{Mathlib}. The formal statements use Mathlib's definitions of algebraic numbers, total positivity and the areal measure, and they speak of accumulation points of $\mathcal L_A^+$ and of finite sets of algebraic numbers instead of $\lambda_A^+$ and $E_A^+$. For the lower bound they state, without hypotheses, that for every $\varepsilon>0$ only finitely many totally positive algebraic numbers $\alpha$ satisfy $\log N_0(\alpha)\le m_0-\varepsilon$, that only finitely many satisfy $N_0(\alpha)\le\LB$, and that every accumulation point of $\mathcal L_A^+$ is at least $e^{m_0}$, with $m_0$ as in Section~\ref{sec:cert}. The formal proof contains Pritsker's formula \eqref{eq:pritsker}, Lemma~\ref{lem:aux}, Corollary~\ref{cor:fin} and the closed forms of $U_\rho$ and $I(\rho)$. The inequality \eqref{eq:F} for the lower certificate is proved by a checking program written in Lean, together with a proof that the program is correct for every input that it accepts.
+
+For the upper bound the formal statements say that infinitely many totally positive algebraic integers satisfy $N_0(\alpha)<\UB$ and that $\mathcal L_A^+$ has an accumulation point at most $e^{v^*}$. Their one hypothesis is Smith's theorem \cite[Theorem~1.5]{Smi24} for intervals, in the following form.
+
+\begin{quote}
+Let $a,b\in\R$ with $b-a>4$, and let $\mu$ be a Borel probability measure on $\R$ with $\mu(\R\setminus[a,b])=0$ such that for every nonzero $Q\in\Z[x]$ the set $\{x\in\R:Q(x)=0\}$ has $\mu$-measure $0$, the function $\log|Q|$ is $\mu$-integrable, and $\int\log|Q|\,d\mu\ge0$. Then there are pairwise distinct monic polynomials $R_1,R_2,\ldots\in\Z[x]$, irreducible in $\Z[x]$, all of whose complex roots are real and lie in $[a,b]$, such that $\frac1{\deg R_k}\sum_{R_k(\rho)=0}f(\rho)\to\int f\,d\mu$ as $k\to\infty$ for every continuous $f\colon\R\to\R$, where the roots are counted with multiplicity.
+\end{quote}
+For a measure carried by $[a,b]$, the three conditions on $Q$ together are Smith's condition $\int\log|Q|\,d\mu\ge0$ with $\log0=-\infty$; the first is stated separately because Mathlib sets $\log0=0$. All other steps of the proof of Lemma~\ref{lem:crit} are proved in Lean, among them the minimum principle and the mixing with an equilibrium measure. A second checking program in Lean verifies that the polynomials are primitive and irreducible, \ref{c1}--\ref{c3} and the bound $\frac1s\int g\,d\mu\le v^*$ for the upper certificate with its $10$ weights below $10^{-7}$ set to $0$, which leaves $23$ polynomials and the same $G$ and $v^*$.
+
+Each bound has two formal proofs, which differ in how the checks of the certificate are evaluated: as compiled code by \lean{native_decide}, which makes Lean's compiler, a C compiler and the Lean runtime part of the trusted base, or by Lean's kernel, in which case the theorems depend only on the three standard axioms of Lean. The theorems are \lean{areal_lower_N} and \lean{areal_lower_K} for the lower bound and \lean{areal_upper_N} and \lean{areal_upper_K} for the upper bound.
+
+\section{Remarks}\label{sec:remarks}
+
+The statements of this section are numerical observations, computed in floating point; the proof does not use them.
+
+\subsection*{The search}
+For the lower bound we first minimized $\int g\,d\theta$ over probability measures $\theta$ whose densities are combinations of hat functions on the nodes of the lower certificate, subject to $\int\log|Q|\,d\theta\ge0$ for the $58$ polynomials of \cite[Table~2]{Fla15} and to $I(\theta)\ge0$, with an interior-point solver for second-order cone programs \cite{Clarabel} and a modeling language \cite{CVXPY}. The value corresponds to $N_0\approx\PrimalVal$, and to $N_0\approx\PrimalNoEnergy$ without the energy constraint. We then fixed the reference measure $\nu$ to the computed optimal measure and solved, by cutting planes, the linear program for $m$, the weights $c_j\ge0$ and $\lambda\ge0$. Its value corresponds to $N_0\approx\DualVal$, and $m_0$ is this value minus $\MarginLo$, after rounding of the data to exact rationals. For the upper bound we minimized $\int g\,d\mu$ over measures of mass $1$ with densities of the same kind on refined nodes in $[0,20]$, and over weights $b_j\ge0$ for the same polynomials, subject to \ref{c1}--\ref{c3} with small margins, by cutting planes with the interior-point method of CVXOPT \cite{cvxopt}; $v^*$ exceeds the exact value of $\frac1s\int g\,d\mu$ for the rounded data by about $10^{-9}$. Table~\ref{tab:polys} shows the polynomials that receive positive weight.
+
+\subsection*{Flammang's table}
+Row~$39$ of \cite[Table~2]{Fla15} is printed with the terms $+59x^{10}+60x^9$, whose signs break the alternation of the coefficients seen in the other rows; we use it as printed, and neither certificate contains it. With the weights printed in the table, the minimum of her auxiliary function gives $N_0\ge\FlamPrinted$, slightly below her constant $\FlamVal$, as the rounding of the printed weights allows. Re-optimizing the weights of the same polynomials by linear programming gives $\FlamReopt$.
+
+\subsection*{Smyth's sequence}
+Smyth's totally real algebraic integers $\beta_n$, defined by $\beta_0=1$ and $\beta_n-1/\beta_n=\beta_{n-1}$ with $\beta_n>0$ \cite{Smy80}, give totally positive algebraic integers $\beta_n^2$. We computed $N_0(\beta_n^2)$ from the $2^n$ conjugates of $\beta_n$. The values for $n=19,\dots,22$ are $1.4096307898$, $1.4096308214$, $1.4096308365$ and $1.4096308437$, and the increments roughly halve, which suggests the limit $\SmySeq\ldots$. This is well above the upper bound of Theorem~\ref{thm:main}.
+
+\subsection*{The gap}
+Integrating \eqref{eq:F} against a measure $\theta$ of the kind considered in the search, as in \cite[Section~4.1]{Tom26a}, shows that no auxiliary function of Lemma~\ref{lem:aux} with the $58$ polynomials gives more than the infimum of the measure problem, which is at most the value $N_0\approx\PrimalVal$ of the search above. The lower bound of Theorem~\ref{thm:main} lies $9.1\cdot10^{-5}$ below that value, a loss due to the fixed reference measure, the discretization and the margin $\MarginLo$. The remaining $8.5\cdot10^{-4}$ separates that value from the upper bound. On $[0,16]$, halving the uniform spacing from $1/100$ to $1/200$, $1/400$ and $1/800$ lowered the value of the search for the upper bound by about $1.7\cdot10^{-4}$, $1.3\cdot10^{-4}$ and $0.85\cdot10^{-4}$, which suggests an error of order $h^{1/2}$ in the spacing $h$; extrapolating, measures of this kind should not give much below $N_0\approx1.3837$. Further polynomials seem to help less: against a dual solution of the problem at spacing $1/200$, none of $246{,}207$ totally positive polynomials of degree at most $8$, and none of $4{,}437{,}022$ further polynomials, has negative reduced cost.
+
+\section*{Data availability}
+The two certificates, the verification programs with their output, the modified certificates with the output of the programs on them, the Lean proofs, and the programs that produced the certificates are archived at \href{https://doi.org/\SuppDOI}{doi:\SuppDOI} and are available at \RepoLink. The Lean files, for Lean~4 version \texttt{\LEANVERSION} and Mathlib commit \texttt{\MATHLIBCOMMIT}, are in its directory \texttt{lean/}, together with the form of the upper certificate that the two upper theorems use. The repository also describes how Flammang's table was transcribed. The SHA-256 checksums of the lower and the upper certificate are
+\begin{center}\small\texttt{\CertShaLo}\quad and\\ \texttt{\CertShaUp}.\end{center}
+
+\section*{Use of AI tools}
+Generative AI tools were used to find and prove the results, to write the programs and the Lean formalization, and to draft the text. The author reviewed the arguments, the programs and the formal proofs, and takes responsibility for the content.
+
+\begin{thebibliography}{99}
+
+\bibitem{cvxopt} M.~S.~Andersen, J.~Dahl and L.~Vandenberghe, \emph{CVXOPT: Python software for convex optimization}, \url{https://cvxopt.org}.
+
+
+\bibitem{BG06} E.~Bombieri and W.~Gubler, \emph{Heights in Diophantine geometry}, New Math. Monogr. \textbf{4}, Cambridge Univ. Press, Cambridge, 2006.
+
+\bibitem{CVXPY} S.~Diamond and S.~Boyd, \emph{CVXPY: a Python-embedded modeling language for convex optimization}, J. Mach. Learn. Res. \textbf{17} (2016), no.~83, 1--5.
+
+\bibitem{FLINT} The FLINT team, \emph{FLINT: Fast Library for Number Theory}, version~3.6.0, \url{https://flintlib.org}.
+
+\bibitem{Fla15} V.~Flammang, \emph{The Mahler measure and its areal analog for totally positive algebraic integers}, J. Number Theory \textbf{151} (2015), 211--222; HAL: hal-01231484.
+
+\bibitem{Clarabel} P.~J.~Goulart and Y.~Chen, \emph{Clarabel: an interior-point solver for conic programs with quadratic objectives}, arXiv:2405.12762, 2024.
+
+\bibitem{Joh17} F.~Johansson, \emph{Arb: efficient arbitrary-precision midpoint-radius interval arithmetic}, IEEE Trans. Comput. \textbf{66} (2017), 1281--1292.
+
+\bibitem{Mathlib} The mathlib Community, \emph{The Lean mathematical library}, in: Proc. 9th ACM SIGPLAN Int. Conf. Certified Programs and Proofs (CPP 2020), 2020, 367--381.
+
+\bibitem{Lean4} L.~de~Moura and S.~Ullrich, \emph{The Lean 4 theorem prover and programming language}, in: Automated Deduction -- CADE 28, Lecture Notes in Comput. Sci. \textbf{12699}, Springer, 2021, 625--635.
+
+\bibitem{OSS25} B.~J.~Orloski, N.~Talebizadeh Sardari and A.~Smith, \emph{New lower bounds for the Schur--Siegel--Smyth trace problem}, Math. Comp. \textbf{94} (2025), 2005--2040; arXiv:2401.03252.
+
+\bibitem{Pri08} I.~E.~Pritsker, \emph{An areal analog of Mahler's measure}, Illinois J. Math. \textbf{52} (2008), 347--363.
+
+\bibitem{pyflint} python-flint: Python bindings for FLINT, version~0.9.0, \url{https://github.com/flintlib/python-flint}.
+
+\bibitem{ST97} E.~B.~Saff and V.~Totik, \emph{Logarithmic potentials with external fields}, Grundlehren Math. Wiss. \textbf{316}, Springer, Berlin, 1997.
+
+\bibitem{Smi24} A.~Smith, \emph{Algebraic integers with conjugates in a prescribed distribution}, Ann. of Math. (2) \textbf{200} (2024), 71--122; we cite the numbering of arXiv:2111.12660v2.
+
+\bibitem{Smy80} C.~J.~Smyth, \emph{On the measure of totally real algebraic integers}, J. Austral. Math. Soc. Ser. A \textbf{30} (1980), 137--149.
+
+\bibitem{Smy81} C.~J.~Smyth, \emph{On the measure of totally real algebraic integers. II}, Math. Comp. \textbf{37} (1981), 205--208.
+
+\bibitem{Tom26a} T.~S.~Tomar, \emph{A lower bound for the smallest limit point of the absolute Mahler measure of totally positive algebraic integers}, Zenodo, doi:10.5281/zenodo.23524856, 2026.
+
+\bibitem{Tom26b} T.~S.~Tomar, \emph{An upper bound for the smallest limit point of the absolute Mahler measure of totally positive algebraic integers}, Zenodo, doi:10.5281/zenodo.23529776, 2026.
+
+\end{thebibliography}
+
+\end{document}
